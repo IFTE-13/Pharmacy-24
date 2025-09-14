@@ -1,0 +1,1 @@
+export const brandName = "Pharmacy'24"

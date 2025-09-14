@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Rubik } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/themeProvider"
-import { ModeToggle } from "@/components/toggleMode";
+import { ModeToggle } from "@/components/modeToggle";
+import Navbar from "@/components/app/navbar";
+import Footer from "@/components/app/footer";
 
 const rubik = Rubik({
   variable: "--font-rubik",
@@ -30,8 +32,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ModeToggle />
-            {children}
+            <Navbar/>
+            <div className="min-h-screen">
+              {children}
+            </div>
+            <Footer />
           </ThemeProvider>
       </body>
     </html>
