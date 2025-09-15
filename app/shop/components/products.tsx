@@ -1,129 +1,169 @@
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import Image from 'next/image'
-import * as React from 'react'
-import brand from '@/public/brand.png'
+"use client";
+
+import { useEffect, useState } from "react";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink } from "@/components/ui/pagination";
+import * as React from "react";
+import { ProductCard } from "./productCard";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  company: string;
+};
 
 export default function Products() {
-    const products = [
-        {
-            name: 'Paracetamol 500mg',
-            company: 'PharmaCare',
-            price: '$5.99',
-            image: '/medicines/paracetamol.jpg',
-        },
-        {
-            name: 'Amoxicillin 250mg',
-            company: 'HealthPlus',
-            price: '$12.49',
-            image: '/medicines/amoxicillin.jpg',
-        },
-        {
-            name: 'Aspirin 100mg',
-            company: 'MediLife',
-            price: '$4.50',
-            image: '/medicines/aspirin.jpg',
-        },
-        {
-            name: 'Vitamin C Tablets',
-            company: 'NutriHealth',
-            price: '$8.75',
-            image: '/medicines/vitamin-c.jpg',
-        },
-        {
-            name: 'Ibuprofen 400mg',
-            company: 'CareWell',
-            price: '$9.99',
-            image: '/medicines/ibuprofen.jpg',
-        },
-        {
-            name: 'Antacid Syrup',
-            company: 'DigestiveCare',
-            price: '$6.80',
-            image: '/medicines/antacid.jpg',
-        },
-        {
-            name: 'Ibuprofen 400mg',
-            company: 'CareWell',
-            price: '$9.99',
-            image: '/medicines/ibuprofen.jpg',
-        },
-        {
-            name: 'Antacid Syrup',
-            company: 'DigestiveCare',
-            price: '$6.80',
-            image: '/medicines/antacid.jpg',
-        },
-        {
-            name: 'Ibuprofen 400mg',
-            company: 'CareWell',
-            price: '$9.99',
-            image: '/medicines/ibuprofen.jpg',
-        },
-        {
-            name: 'Antacid Syrup',
-            company: 'DigestiveCare',
-            price: '$6.80',
-            image: '/medicines/antacid.jpg',
-        },
-    ]
+  const [products, setProducts] = useState<Product[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("name-asc");
+  const itemsPerPage = 10;
 
-    return (
-        <section>
-            <div className="">
-                <div className="container mx-auto px-6">
-                    <div className="text-center">
-                        <h2 className="text-balance text-3xl font-semibold md:text-4xl">Our Medicines</h2>
-                        <p className="text-muted-foreground mt-6">Browse from our wide collection of trusted medicines.</p>
-                    </div>
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((error) => console.error("Error fetching products:", error));
+  }, []);
 
-                    <div className="mt-12 grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                        {products.map((product, index) => (
-                            <ProductCard
-                                key={index}
-                                name={product.name}
-                                company={product.company}
-                                price={product.price}
-                                image={product.image}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </section>
-    )
-}
+  // Filter products based on search query
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.company.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-const ProductCard = ({
-    name,
-    company,
-    price,
-    image,
-}: {
-    name: string
-    company: string
-    price: string
-    image: string
-}) => {
-    return (
-        <Card className="p-4">
-            <div className="relative w-full h-40 rounded-lg overflow-hidden">
-                <Image
-                    src={brand}
-                    alt={name}
-                    fill
-                    className="object-cover"
+  // Sort products based on selected option
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortOption) {
+      case "name-asc":
+        return a.name.localeCompare(b.name);
+      case "name-desc":
+        return b.name.localeCompare(a.name);
+      case "price-asc":
+        return a.price - b.price;
+      case "price-desc":
+        return b.price - a.price;
+      default:
+        return 0;
+    }
+  });
+
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+
+  // Reset to page 1 when search query or sort option changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortOption]);
+
+  const currentProducts = sortedProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  return (
+    <section>
+      <div className="pb-16">
+        <div className="container mx-auto px-6">
+          <div className="text-center">
+            <h2 className="text-balance text-3xl font-semibold md:text-4xl">
+              Our Medicines
+            </h2>
+            <p className="text-muted-foreground mt-6">
+              Browse from our wide collection of trusted medicines.
+            </p>
+          </div>
+
+          {/* Search and Sort Controls */}
+          <div className="mt-6 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <Input
+              type="text"
+              placeholder="Search by medicine or company..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              aria-label="Search products"
+            />
+            <Select value={sortOption} onValueChange={setSortOption}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                <SelectItem value="price-asc">Price (Low to High)</SelectItem>
+                <SelectItem value="price-desc">Price (High to Low)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="mt-12 grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {currentProducts.length === 0 ? (
+              <p className="text-center text-sm text-gray-500 dark:text-gray-400 col-span-full">
+                No products found matching your search.
+              </p>
+            ) : (
+              currentProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  company={product.company}
+                  price={product.price}
                 />
-            </div>
+              ))
+            )}
+          </div>
 
-            <div className="mt-4">
-                <h3 className="text-lg font-semibold h-16">{name}</h3>
-                <div className="flex items-center justify-between mt-1 text-sm text-muted-foreground">
-                    <span>{company}</span>
-                    <span className="font-medium text-foreground">{price}</span>
-                </div>
-                <Button className="w-full mt-4">Add to Cart</Button>
+          {/* Pagination Controls */}
+          {sortedProducts.length > 0 && (
+            <div className="mt-12 flex justify-center">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+                        e.preventDefault();
+                        if (currentPage > 1) setCurrentPage(currentPage - 1);
+                      }}
+                      aria-disabled={currentPage === 1}
+                    />
+                  </PaginationItem>
+
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === i + 1}
+                        onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+                          e.preventDefault();
+                          setCurrentPage(i + 1);
+                        }}
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+                        e.preventDefault();
+                        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                      }}
+                      aria-disabled={currentPage === totalPages}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
-        </Card>
-    )
+          )}
+        </div>
+      </div>
+    </section>
+  );
 }
