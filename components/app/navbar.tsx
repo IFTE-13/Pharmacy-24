@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import brand from '@/public/brand.png'
 import { brandName } from '@/constant'
-import { ModeToggle } from '../modeToggle'
+import { AnimatedThemeToggler } from '@/components/ui/animatedThemeToggler'
 
 interface ImenuProps {
     name: string
@@ -16,7 +16,6 @@ interface ImenuProps {
 const menuItems: ImenuProps[] = [
     { name: 'Home', href: '/' },
     { name: 'Shop', href: '/shop' },
-    { name: 'Contact', href: '/contact' },
 ]
 
 export default function Navbar() {
@@ -26,7 +25,7 @@ export default function Navbar() {
             <header>
                 <nav
                     data-state={menuState && 'active'}
-                    className="fixed z-20 w-full border-b border-dashed bg-white backdrop-blur md:relative dark:bg-zinc-950/50 lg:dark:bg-transparent">
+                    className="fixed z-20 w-full border-b border-dashed bg-white backdrop-blur dark:bg-zinc-950/50 lg:dark:bg-transparent">
                     <div className="container mx-auto px-6">
                         <div className="flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
                             <div className="flex w-full justify-between lg:w-auto">
@@ -86,7 +85,9 @@ export default function Navbar() {
                                         </Link>
                                     </Button>
 
-                                    <ModeToggle />
+                                    <div className='hidden md:block mt-1'>
+                                        <AnimatedThemeToggler />
+                                    </div>
                                 </div>
                             </div>
                         </div>
