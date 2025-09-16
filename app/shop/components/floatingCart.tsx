@@ -3,15 +3,59 @@
 import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useCart } from "@/providers/cartContext";
+import { useAuth } from "@/providers/authProvider";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export function FloatingCart() {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Calculate total with proper currency formatting
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+
+  const handleCheckout = async () => {
+    if (!user && !loading) {
+      console.log("FloatingCart: No user found, redirecting to /login");
+      toast.error("Please log in to proceed with checkout");
+      router.push("/login");
+      return;
+    }
+
+    setIsModalOpen(true);
+  };
+
+  const confirmCheckout = async () => {
+    try {
+      const res = await fetch("/api/transactions/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: cart, total: parseFloat(total) }),
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        console.log("FloatingCart: Transaction created successfully");
+        toast.success("Checkout completed successfully!");
+        clearCart();
+        setOpen(false);
+        setIsModalOpen(false);
+      } else {
+        const data = await res.json();
+        console.error("FloatingCart: Checkout failed:", data);
+        toast.error(data.error || "Failed to complete checkout");
+      }
+    } catch (error) {
+      console.error("FloatingCart: Checkout error:", error);
+      toast.error("An error occurred during checkout");
+    }
+  };
 
   return (
     <>
@@ -114,11 +158,29 @@ export function FloatingCart() {
             className="w-full mt-6 bg-primary hover:bg-primary-dark font-semibold py-2 rounded-md"
             disabled={cart.length === 0}
             aria-disabled={cart.length === 0}
+            onClick={handleCheckout}
           >
             Proceed to Checkout
           </Button>
         </SheetContent>
       </Sheet>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Checkout</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to proceed with the checkout? Your cart contains {cart.length} item(s) with a total of ${total}.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmCheckout}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

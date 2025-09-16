@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const [users] = await db.query("SELECT id, name, email, role FROM users WHERE id = ?", [decoded.userId]);
+    const [users] = await db.query("SELECT id, name, email, phone, address, role FROM users WHERE id = ?", [decoded.userId]);
     const user = (users as any[])[0];
 
     if (!user) {

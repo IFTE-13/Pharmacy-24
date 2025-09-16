@@ -36,7 +36,7 @@ export default function Testimonials() {
                                 <div className="grid grid-cols-[auto_1fr] items-center gap-3">
                                     <Avatar className="size-12">
                                         <AvatarImage
-                                            src="/avatars/sadia.png"
+                                            src=""
                                             alt="Sadia Rahman"
                                             height="400"
                                             width="400"
@@ -63,7 +63,7 @@ export default function Testimonials() {
                                 <div className="grid grid-cols-[auto_1fr] items-center gap-3">
                                     <Avatar className="size-12">
                                         <AvatarImage
-                                            src="/avatars/ahmed.png"
+                                            src=""
                                             alt="Ahmed Karim"
                                             height="400"
                                             width="400"
@@ -90,7 +90,7 @@ export default function Testimonials() {
                                 <div className="grid items-center gap-3 [grid-template-columns:auto_1fr]">
                                     <Avatar className="size-12">
                                         <AvatarImage
-                                            src="/avatars/mahbub.png"
+                                            src=""
                                             alt="Mahbub Hasan"
                                             height="400"
                                             width="400"
@@ -117,7 +117,7 @@ export default function Testimonials() {
                                 <div className="grid grid-cols-[auto_1fr] gap-3">
                                     <Avatar className="size-12">
                                         <AvatarImage
-                                            src="/avatars/nabila.png"
+                                            src=""
                                             alt="Nabila Chowdhury"
                                             height="400"
                                             width="400"

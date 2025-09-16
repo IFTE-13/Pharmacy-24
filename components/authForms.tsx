@@ -45,11 +45,11 @@ export function RegisterForm() {
       console.log("Register: Success, user:", data.user);
       login(data.user);
       setTimeout(() => {
-        console.log("Register: Navigating to /dashboard");
-        router.push("/dashboard");
+        console.log("Register: Navigating to /shop");
+        router.push("/shop");
         setTimeout(() => {
-          console.log("Register: Fallback navigation to /dashboard");
-          window.location.href = "/dashboard";
+          console.log("Register: Fallback navigation to /shop");
+          window.location.href = "/shop";
         }, 500);
       }, 100);
     } catch (err: any) {
@@ -140,11 +140,11 @@ export function LoginForm() {
       console.log("Login: Success, user:", data.user);
       login(data.user);
       setTimeout(() => {
-        console.log("Login: Navigating to /dashboard");
-        router.push("/dashboard");
+        console.log("Login: Navigating to /shop");
+        router.push("/shop");
         setTimeout(() => {
-          console.log("Login: Fallback navigation to /dashboard");
-          window.location.href = "/dashboard";
+          console.log("Login: Fallback navigation to /shop");
+          window.location.href = "/shop";
         }, 500);
       }, 100);
     } catch (err: any) {

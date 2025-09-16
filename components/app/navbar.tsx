@@ -19,6 +19,7 @@ interface ImenuProps {
 const menuItems: ImenuProps[] = [
   { name: "Home", href: "/" },
   { name: "Shop", href: "/shop" },
+  { name: "Profile", href: "/profile" },
 ];
 
 export default function Navbar() {
@@ -64,16 +65,21 @@ export default function Navbar() {
               <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
                 <div className="lg:pr-4">
                   <ul className="space-y-6 text-base lg:flex lg:gap-8 lg:space-y-0 lg:text-sm">
-                    {menuItems.map((item, index) => (
-                      <li key={index}>
-                        <Link
-                          href={item.href}
-                          className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                        >
-                          <span>{item.name}</span>
-                        </Link>
-                      </li>
-                    ))}
+                    {menuItems.map((item, index) => {
+                      // Hide Profile link if no user, hide Home link if user exists
+                      if (item.name === "Profile" && (!user || loading)) return null;
+                      if (item.name === "Home" && user && !loading) return null;
+                      return (
+                        <li key={index}>
+                          <Link
+                            href={item.href}
+                            className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                          >
+                            <span>{item.name}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
 

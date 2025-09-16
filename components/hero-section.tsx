@@ -1,7 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { HeroHeader } from './header'
 import { InfiniteSlider } from '@/components/ui/infinite-slider'
 import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 import { ChevronRight } from 'lucide-react'
@@ -9,7 +8,6 @@ import { ChevronRight } from 'lucide-react'
 export default function HeroSection() {
     return (
         <>
-            <HeroHeader />
             <main className="overflow-x-hidden">
                 <section>
                     <div className="py-24 md:pb-32 lg:pb-36 lg:pt-72">
