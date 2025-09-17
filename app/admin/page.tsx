@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useAuth } from "@/providers/authProvider";
+import { AuthContextType } from "@/providers/authProvider";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -40,7 +41,7 @@ interface Transaction {
 }
 
 export default function AdminDashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, setUser } = useAuth() as AuthContextType;
   const [users, setUsers] = useState<User[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -50,7 +51,7 @@ export default function AdminDashboard() {
   const [profileForm, setProfileForm] = useState({ name: "", phone: "", address: "" });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isLoadingPassword, setIsLoadingPassword] = useState(false);
   const [productForm, setProductForm] = useState({ id: 0, name: "", price: 0, company: "" });
   const [isEditingProduct, setIsEditingProduct] = useState(false);
 
@@ -61,8 +62,8 @@ export default function AdminDashboard() {
       redirect("/login");
     }
     if (!loading && user && user.role !== "admin") {
-      console.log("AdminDashboard: Non-admin user, redirecting to /profile");
-      redirect("/profile");
+      console.log("AdminDashboard: Non-admin user, redirecting to /shop");
+      redirect("/shop");
     }
     if (user) {
       setProfileForm({
@@ -82,12 +83,20 @@ export default function AdminDashboard() {
       const res = await fetch("/api/users", { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
-        console.log("AdminDashboard: Users fetched:", data);
+        console.log("AdminDashboard: Non-admin users fetched:", data);
         setUsers(data);
       } else {
         const errorData = await res.json();
         console.error("AdminDashboard: Failed to fetch users:", errorData);
-        toast.error(errorData.error || "Failed to fetch users");
+        if (res.status === 401) {
+          toast.error("Unauthorized: Please log in again");
+          redirect("/login");
+        } else if (res.status === 403) {
+          toast.error("Forbidden: Admin access required");
+          redirect("/shop");
+        } else {
+          toast.error(errorData.error || "Failed to fetch users");
+        }
       }
     } catch (error) {
       console.error("AdminDashboard: Error fetching users:", error);
@@ -108,7 +117,15 @@ export default function AdminDashboard() {
       } else {
         const errorData = await res.json();
         console.error("AdminDashboard: Failed to fetch products:", errorData);
-        toast.error(errorData.error || "Failed to fetch products");
+        if (res.status === 401) {
+          toast.error("Unauthorized: Please log in again");
+          redirect("/login");
+        } else if (res.status === 403) {
+          toast.error("Forbidden: Admin access required");
+          redirect("/shop");
+        } else {
+          toast.error(errorData.error || "Failed to fetch products");
+        }
       }
     } catch (error) {
       console.error("AdminDashboard: Error fetching products:", error);
@@ -129,7 +146,15 @@ export default function AdminDashboard() {
       } else {
         const errorData = await res.json();
         console.error("AdminDashboard: Failed to fetch transactions:", errorData);
-        toast.error(errorData.error || "Failed to fetch transactions");
+        if (res.status === 401) {
+          toast.error("Unauthorized: Please log in again");
+          redirect("/login");
+        } else if (res.status === 403) {
+          toast.error("Forbidden: Admin access required");
+          redirect("/shop");
+        } else {
+          toast.error(errorData.error || "Failed to fetch transactions");
+        }
       }
     } catch (error) {
       console.error("AdminDashboard: Error fetching transactions:", error);
@@ -156,11 +181,25 @@ export default function AdminDashboard() {
         const authRes = await fetch("/api/auth/user", { credentials: "include" });
         if (authRes.ok) {
           const userData = await authRes.json();
+          setUser(userData);
+          setProfileForm({
+            name: userData.name || "",
+            phone: userData.phone || "",
+            address: userData.address || "",
+          });
+        } else {
+          console.error("AdminDashboard: Failed to refresh user data:", await authRes.json());
+          toast.error("Failed to refresh user data");
         }
       } else {
         const data = await res.json();
         console.error("AdminDashboard: Update failed:", data);
-        toast.error(data.error || "Failed to update profile");
+        if (res.status === 401) {
+          toast.error("Unauthorized: Please log in again");
+          redirect("/login");
+        } else {
+          toast.error(data.error || "Failed to update profile");
+        }
       }
     } catch (error) {
       console.error("AdminDashboard: Update error:", error);
@@ -172,7 +211,7 @@ export default function AdminDashboard() {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsChangingPassword(true);
+    setIsLoadingPassword(true);
     try {
       const res = await fetch("/api/auth/change-password", {
         method: "POST",
@@ -187,20 +226,25 @@ export default function AdminDashboard() {
       } else {
         const data = await res.json();
         console.error("AdminDashboard: Password change failed:", data);
-        toast.error(data.error || "Failed to change password");
+        if (res.status === 401) {
+          toast.error("Unauthorized: Please log in again");
+          redirect("/login");
+        } else {
+          toast.error(data.error || "Failed to change password");
+        }
       }
     } catch (error) {
       console.error("AdminDashboard: Password change error:", error);
       toast.error("An error occurred while changing password");
     } finally {
-      setIsChangingPassword(false);
+      setIsLoadingPassword(false);
     }
   };
 
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const url = isEditingProduct ? "/api/products" : "/api/products";
+      const url = "/api/products";
       const method = isEditingProduct ? "PUT" : "POST";
       const res = await fetch(url, {
         method,
@@ -218,7 +262,15 @@ export default function AdminDashboard() {
       } else {
         const data = await res.json();
         console.error(`AdminDashboard: Product ${isEditingProduct ? "update" : "create"} failed:`, data);
-        toast.error(data.error || `Failed to ${isEditingProduct ? "update" : "create"} product`);
+        if (res.status === 401) {
+          toast.error("Unauthorized: Please log in again");
+          redirect("/login");
+        } else if (res.status === 403) {
+          toast.error("Forbidden: Admin access required");
+          redirect("/shop");
+        } else {
+          toast.error(data.error || `Failed to ${isEditingProduct ? "update" : "create"} product`);
+        }
       }
     } catch (error) {
       console.error("AdminDashboard: Product error:", error);
@@ -232,6 +284,12 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (id: number) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this product?");
+    if (!confirmDelete) {
+      console.log("AdminDashboard: Product deletion cancelled, id:", id);
+      return;
+    }
+
     try {
       const res = await fetch("/api/products", {
         method: "DELETE",
@@ -246,7 +304,15 @@ export default function AdminDashboard() {
       } else {
         const data = await res.json();
         console.error("AdminDashboard: Product deletion failed:", data);
-        toast.error(data.error || "Failed to delete product");
+        if (res.status === 401) {
+          toast.error("Unauthorized: Please log in again");
+          redirect("/login");
+        } else if (res.status === 403) {
+          toast.error("Forbidden: Admin access required");
+          redirect("/shop");
+        } else {
+          toast.error(data.error || "Failed to delete product");
+        }
       }
     } catch (error) {
       console.error("AdminDashboard: Product deletion error:", error);
@@ -360,7 +426,13 @@ export default function AdminDashboard() {
                   {isEditingProduct ? "Update Product" : "Add Product"}
                 </Button>
                 {isEditingProduct && (
-                  <Button variant="outline" onClick={() => setIsEditingProduct(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setProductForm({ id: 0, name: "", price: 0, company: "" });
+                      setIsEditingProduct(false);
+                    }}
+                  >
                     Cancel Edit
                   </Button>
                 )}
@@ -546,8 +618,8 @@ export default function AdminDashboard() {
                       required
                     />
                   </div>
-                  <Button type="submit" disabled={isChangingPassword}>
-                    {isChangingPassword ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Changing...</> : "Change Password"}
+                  <Button type="submit" disabled={isLoadingPassword}>
+                    {isLoadingPassword ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Changing...</> : "Change Password"}
                   </Button>
                 </form>
               </CardContent>
