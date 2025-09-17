@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/providers/authProvider";
+import toast from "react-hot-toast";
 
 interface FormData {
   name?: string;
@@ -19,8 +18,6 @@ export function RegisterForm() {
   const [formData, setFormData] = useState<FormData>({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,18 +40,14 @@ export function RegisterForm() {
       }
 
       console.log("Register: Success, user:", data.user);
-      login(data.user);
-      setTimeout(() => {
-        console.log("Register: Navigating to /shop");
-        router.push("/shop");
-        setTimeout(() => {
-          console.log("Register: Fallback navigation to /shop");
-          window.location.href = "/shop";
-        }, 500);
-      }, 100);
+      toast.success("Registration successful");
+      const redirectPath = data.user.role === "admin" ? "/admin" : "/shop";
+      console.log(`Register: Redirecting to ${redirectPath}`);
+      window.location.href = redirectPath;
     } catch (err: any) {
       console.error("Register: Error:", err.message);
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -114,8 +107,6 @@ export function LoginForm() {
   const [formData, setFormData] = useState<FormData>({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,18 +129,14 @@ export function LoginForm() {
       }
 
       console.log("Login: Success, user:", data.user);
-      login(data.user);
-      setTimeout(() => {
-        console.log("Login: Navigating to /shop");
-        router.push("/shop");
-        setTimeout(() => {
-          console.log("Login: Fallback navigation to /shop");
-          window.location.href = "/shop";
-        }, 500);
-      }, 100);
+      toast.success("Login successful");
+      const redirectPath = data.user.role === "admin" ? "/admin" : "/shop";
+      console.log(`Login: Redirecting to ${redirectPath}`);
+      window.location.href = redirectPath;
     } catch (err: any) {
       console.error("Login: Error:", err.message);
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }

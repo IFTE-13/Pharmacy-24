@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import jwt from "jsonwebtoken";
 
-export const runtime = 'nodejs'; // Ensure Node.js runtime for jwt
-
 const JWT_SECRET = process.env.JWT_SECRET || "my-super-secure-key-12345";
 
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get("token")?.value;
-    console.log(`User API: Token: ${token ? token : "missing"}`);
-
     if (!token) {
       console.error("User API: No token found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,10 +14,10 @@ export async function GET(request: NextRequest) {
 
     let decoded: any;
     try {
-      decoded = jwt.verify(token, JWT_SECRET) as { userId: number; role: string };
-      console.log(`User API: Token verified, userId: ${decoded.userId}, role: ${decoded.role}`);
-    } catch (error: any) {
-      console.error(`User API: Token verification failed: ${error.message}`);
+      decoded = jwt.verify(token, JWT_SECRET);
+      console.log("User API: Token verified, userId:", decoded.userId);
+    } catch (error) {
+      console.error("User API: Token verification failed:", error);
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
@@ -35,8 +31,8 @@ export async function GET(request: NextRequest) {
 
     console.log("User API: Fetched user:", user);
     return NextResponse.json(user);
-  } catch (error: any) {
-    console.error("User API: Error:", error.message);
+  } catch (error) {
+    console.error("User API: Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
