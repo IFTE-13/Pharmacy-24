@@ -6,6 +6,8 @@ The application leverages a **MySQL database**, **JWT for authentication**, and 
 
 ---
 
+![ui](https://github.com/user-attachments/assets/725ec310-8f0b-4eef-bdae-17a34d1c8b12)
+
 ## 🚀 Features
 
 - **Admin Dashboard**: Manage users, products, and transactions with a user-friendly interface.  
@@ -39,4 +41,127 @@ The application leverages a **MySQL database**, **JWT for authentication**, and 
 - **Node.js** (v18 or higher)  
 - **MySQL** (v8 or higher)  
 - **Git**  
-- **npm** or **yarn**  
+- **npm** or **yarn**
+
+## ⚙️ Installation
+
+1. **Clone the Repository**:
+```bash
+git clone https://github.com/your-username/pharmacy-24.git
+cd pharmacy-24
+```
+2. Install Dependencies:
+```bash
+npm install
+```
+3. Set Up Environment Variables:
+Create a .env.local file in the root directory and add:
+```bash
+DB_HOST=localhost
+DB_USER=your_mysql_username
+DB_PASSWORD=your_mysql_password
+DB_NAME=pharmacy_24_db
+JWT_SECRET=your_jwt_secret_key
+```
+4. Set Up MySQL Database:
+```bash
+CREATE DATABASE pharmacy_24_db;
+USE pharmacy_24_db;
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255),
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role ENUM('user', 'admin') NOT NULL,
+  phone VARCHAR(50),
+  address TEXT,
+  created_at DATETIME NOT NULL
+);
+
+CREATE TABLE products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  company VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL
+);
+
+CREATE TABLE transactions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  description TEXT NOT NULL,
+  created_at DATETIME NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+Insert a sample admin user (password: admin123 hashed with bcrypt):
+```bash
+INSERT INTO users (name, email, password, role, created_at)
+VALUES ('Admin User', 'admin@example.com', '$2a$10$your_bcrypt_hashed_password', 'admin', NOW());
+```
+Generate bcrypt hash for admin123:
+```bash
+node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('admin123', 10).then(hash => console.log(hash));"
+```
+5. Run the Development Server:
+```bash
+npm run dev
+```
+6. Open http://localhost:3000 in your browser.
+
+---
+
+## 📖 Usage
+### 🔑 Login
+- Navigate to /login and use credentials (e.g., admin@example.com, admin123).
+- Admins are redirected to /admin, users to /shop.
+
+### 📊 Admin Dashboard
+- Users Tab: View all non-admin users.
+- Products Tab: Add, edit, or delete products (with confirmation prompts).
+- Transactions Tab: View all transactions.
+- Profile Tab: Update admin profile or change password.
+
+### ⚠️ Error Handling
+- Unauthorized (401) or forbidden (403) errors redirect to /login or /shop with toast notifications.
+- Toast notifications provide feedback for all actions.
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository.
+2. Create a feature branch:
+```bash
+git checkout -b feature/YourFeature
+```
+3. Commit your changes:
+```bash
+git commit -m "Add YourFeature"
+```
+4. Push to the branch:
+```bash
+git push origin feature/YourFeature
+```
+   
+---
+
+## 💡 Shout-Out to Grok
+
+This project was developed with the assistance of Grok, an AI created by xAI
+
+Grok provided guidance on:
+* Fixing middleware issues
+* Resolving database schema errors
+* Implementing toast notifications
+* Generating this README
+
+### Special thanks to Grok (version: continuously updated as of September 17, 2025) for its insightful debugging and code suggestions! 🎉
+
+--- 
+
+## 📜 License
+This project is licensed under the MIT License. See the LICENSE file for details.
